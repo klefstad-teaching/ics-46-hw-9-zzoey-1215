@@ -1,4 +1,5 @@
 #include "dijkstras.h"
+#include <algorithm>
 
 int main() {
     try {

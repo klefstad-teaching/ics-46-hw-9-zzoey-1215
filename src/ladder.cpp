@@ -1,4 +1,5 @@
 #include "ladder.h"
+#include <algorithm>
 
 void error(string word1, string word2, string msg) {
     cerr << "Error with words '" << word1 << "' and '" << word2 << "': " << msg << endl;
@@ -18,8 +19,10 @@ bool edit_distance_within(const string& str1, const string& str2, int d) {
         for (size_t j = 1; j <= str2.length(); j++) {
             if (str1[i-1] == str2[j-1])
                 dp[i][j] = dp[i-1][j-1];
-            else
-                dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});
+            else {
+                int min1 = min(dp[i-1][j], dp[i][j-1]);
+                dp[i][j] = 1 + min(min1, dp[i-1][j-1]);
+            }
         }
     }
     

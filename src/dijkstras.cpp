@@ -1,4 +1,5 @@
 #include "dijkstras.h"
+#include <algorithm>
 
 vector<int> dijkstra_shortest_path(const Graph& G, int source, vector<int>& previous) {
     vector<int> distances(G.numVertices, INF);

@@ -1,4 +1,5 @@
 #include "ladder.h"
+#include <algorithm>
 
 int main() {
     try {
