@@ -36,7 +36,7 @@ bool is_adjacent(const string& word1, const string& word2) {
     return edit_distance_within(word1, word2, 1);
 }
 
-vector<string> generate_neighbors(const string& word, const set<string>& word_list) {
+vector<string> generate_neighbors(const string& word) {
     vector<string> neighbors;
     const string letters = "abcdefghijklmnopqrstuvwxyz";
 
@@ -45,31 +45,22 @@ vector<string> generate_neighbors(const string& word, const set<string>& word_li
             if (c == word[i]) continue;
             string neighbor = word;
             neighbor[i] = c;
-            if (word_list.count(neighbor)) {
-                neighbors.push_back(neighbor);
-            }
+            neighbors.push_back(neighbor);
         }
     }
 
     for (size_t i = 0; i <= word.size(); ++i) {
         for (char c : letters) {
-            string neighbor = word.substr(0, i) + c + word.substr(i);
-            if (word_list.count(neighbor)) {
-                neighbors.push_back(neighbor);
-            }
+            neighbors.push_back(word.substr(0, i) + c + word.substr(i));
         }
     }
 
     for (size_t i = 0; i < word.size(); ++i) {
-        string neighbor = word.substr(0, i) + word.substr(i + 1);
-        if (word_list.count(neighbor)) {
-            neighbors.push_back(neighbor);
-        }
+        neighbors.push_back(word.substr(0, i) + word.substr(i + 1));
     }
 
     return neighbors;
 }
-
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
     if (begin_word == end_word) return {};
@@ -85,33 +76,56 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     visited.insert(begin_word);
 
     while (!ladder_queue.empty()) {
-        auto current_ladder = ladder_queue.front();
-        ladder_queue.pop();
+        int level_size = ladder_queue.size();
+        set<string> words_in_level;
 
-        string last_word = current_ladder.back();
-        vector<string> neighbors = generate_neighbors(last_word);
-        sort(neighbors.begin(), neighbors.end()); 
-        for (const string& neighbor : neighbors) {
-            if (neighbor == end_word) {
-                current_ladder.push_back(neighbor);
-                return current_ladder;
+        for (int i = 0; i < level_size; ++i) {
+            auto current_ladder = ladder_queue.front();
+            ladder_queue.pop();
+
+            string last_word = current_ladder.back();
+            vector<string> neighbors;
+
+            for (size_t j = 0; j < last_word.size(); ++j) {
+                string temp = last_word;
+                for (char c = 'a'; c <= 'z'; ++c) {
+                    if (c == last_word[j]) continue;
+                    temp[j] = c;
+                    if (word_list.count(temp) && !visited.count(temp)) {
+                        neighbors.push_back(temp);
+                    }
+                }
             }
 
-            if (word_list.count(neighbor) && !visited.count(neighbor)) {
-                visited.insert(neighbor);
+            sort(neighbors.begin(), neighbors.end());
+
+            for (const string& neighbor : neighbors) {
+                if (neighbor == end_word) {
+                    current_ladder.push_back(neighbor);
+                    return current_ladder;
+                }
+                words_in_level.insert(neighbor);
                 vector<string> new_ladder = current_ladder;
                 new_ladder.push_back(neighbor);
                 ladder_queue.push(new_ladder);
             }
+        }
+
+        for (const string& word : words_in_level) {
+            visited.insert(word);
         }
     }
 
     return {};
 }
 
+
 void load_words(set<string>& word_list, const string& file_name) {
     ifstream file(file_name);
-    if (!file) throw runtime_error("Cannot open file: " + file_name);
+    if (!file) {
+        cerr << "Error: Cannot open file " << file_name << endl;
+        return;
+    }
 
     string word;
     while (file >> word) {
@@ -119,6 +133,7 @@ void load_words(set<string>& word_list, const string& file_name) {
         word_list.insert(word);
     }
 }
+
 
 void print_word_ladder(const vector<string>& ladder) {
     if (ladder.empty()) {
