@@ -36,7 +36,7 @@ bool is_adjacent(const string& word1, const string& word2) {
     return edit_distance_within(word1, word2, 1);
 }
 
-vector<string> generate_neighbors(const string& word) {
+vector<string> generate_neighbors(const string& word, const set<string>& word_list) {
     vector<string> neighbors;
     const string letters = "abcdefghijklmnopqrstuvwxyz";
 
@@ -45,22 +45,31 @@ vector<string> generate_neighbors(const string& word) {
             if (c == word[i]) continue;
             string neighbor = word;
             neighbor[i] = c;
-            neighbors.push_back(neighbor);
+            if (word_list.count(neighbor)) {
+                neighbors.push_back(neighbor);
+            }
         }
     }
 
     for (size_t i = 0; i <= word.size(); ++i) {
         for (char c : letters) {
-            neighbors.push_back(word.substr(0, i) + c + word.substr(i));
+            string neighbor = word.substr(0, i) + c + word.substr(i);
+            if (word_list.count(neighbor)) {
+                neighbors.push_back(neighbor);
+            }
         }
     }
 
     for (size_t i = 0; i < word.size(); ++i) {
-        neighbors.push_back(word.substr(0, i) + word.substr(i + 1));
+        string neighbor = word.substr(0, i) + word.substr(i + 1);
+        if (word_list.count(neighbor)) {
+            neighbors.push_back(neighbor);
+        }
     }
 
     return neighbors;
 }
+
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
     if (begin_word == end_word) return {};
@@ -81,9 +90,8 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
 
         string last_word = current_ladder.back();
         vector<string> neighbors = generate_neighbors(last_word);
-
+        sort(neighbors.begin(), neighbors.end()); 
         for (const string& neighbor : neighbors) {
-            cout << "Checking neighbor: " << neighbor << endl;
             if (neighbor == end_word) {
                 current_ladder.push_back(neighbor);
                 return current_ladder;
