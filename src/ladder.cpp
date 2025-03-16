@@ -45,17 +45,32 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     queue<vector<string>> ladder_queue;
     set<string> visited;
     
-    ladder_queue.push({begin_word});
+    vector<string> initial_ladder = {begin_word};
+    ladder_queue.push(initial_ladder);
     visited.insert(begin_word);
+    
+    const size_t MAX_LADDER_LENGTH = 50;  
     
     while (!ladder_queue.empty()) {
         vector<string> current_ladder = ladder_queue.front();
         ladder_queue.pop();
         
+        if (current_ladder.size() >= MAX_LADDER_LENGTH) {
+            continue;
+        }
+        
         string last_word = current_ladder.back();
         
         for (const string& word : word_list) {
-            if (visited.count(word) || !is_adjacent(last_word, word)) {
+            if (abs((int)word.length() - (int)last_word.length()) > 1) {
+                continue;
+            }
+            
+            if (visited.count(word)) {
+                continue;
+            }
+            
+            if (!is_adjacent(last_word, word)) {
                 continue;
             }
             
