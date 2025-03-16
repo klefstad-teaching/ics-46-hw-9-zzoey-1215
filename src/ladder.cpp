@@ -3,6 +3,7 @@
 #include <queue>
 #include <set>
 #include <vector>
+#include <climits>
 
 using namespace std;
 
@@ -10,66 +11,77 @@ void error(string word1, string word2, string msg) {
     cerr << "Error with words '" << word1 << "' and '" << word2 << "': " << msg << endl;
 }
 
+bool edit_distance_within(const string& str1, const string& str2, int d) {
+    if (abs((int)str1.length() - (int)str2.length()) > d) return false;
+    
+    vector<vector<int>> dp(str1.length() + 1, vector<int>(str2.length() + 1));
+    
+    for (size_t i = 0; i <= str1.length(); i++)
+        dp[i][0] = i;
+    for (size_t j = 0; j <= str2.length(); j++)
+        dp[0][j] = j;
+        
+    for (size_t i = 1; i <= str1.length(); i++) {
+        for (size_t j = 1; j <= str2.length(); j++) {
+            if (str1[i-1] == str2[j-1])
+                dp[i][j] = dp[i-1][j-1];
+            else
+                dp[i][j] = 1 + min({dp[i-1][j], dp[i][j-1], dp[i-1][j-1]});
+        }
+    }
+    return dp[str1.length()][str2.length()] <= d;
+}
+
+bool is_adjacent(const string& word1, const string& word2) {
+    return edit_distance_within(word1, word2, 1);
+}
+
 vector<string> generate_neighbors(const string& word) {
     vector<string> neighbors;
+    const string letters = "abcdefghijklmnopqrstuvwxyz";
 
-    // Generate substitutions
     for (size_t i = 0; i < word.size(); ++i) {
-        char original = word[i];
-        for (char c = 'a'; c <= 'z'; ++c) {
-            if (c == original) continue;
-            string new_word = word;
-            new_word[i] = c;
-            neighbors.push_back(new_word);
+        for (char c : letters) {
+            if (c == word[i]) continue;
+            string neighbor = word;
+            neighbor[i] = c;
+            neighbors.push_back(neighbor);
         }
     }
 
-    // Generate insertions
     for (size_t i = 0; i <= word.size(); ++i) {
-        for (char c = 'a'; c <= 'z'; ++c) {
-            string new_word = word.substr(0, i) + c + word.substr(i);
-            neighbors.push_back(new_word);
+        for (char c : letters) {
+            neighbors.push_back(word.substr(0, i) + c + word.substr(i));
         }
     }
 
-    // Generate deletions
     for (size_t i = 0; i < word.size(); ++i) {
-        string new_word = word.substr(0, i) + word.substr(i + 1);
-        neighbors.push_back(new_word);
+        neighbors.push_back(word.substr(0, i) + word.substr(i + 1));
     }
 
     return neighbors;
 }
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
-    if (begin_word == end_word) {
-        return vector<string>();
-    }
-
-    if (word_list.find(end_word) == word_list.end()) {
-        return vector<string>();
-    }
+    if (begin_word == end_word) return {};
 
     queue<vector<string>> ladder_queue;
     set<string> visited;
 
-    vector<string> initial_ladder = {begin_word};
-    ladder_queue.push(initial_ladder);
+    ladder_queue.push({begin_word});
     visited.insert(begin_word);
 
     while (!ladder_queue.empty()) {
-        vector<string> current_ladder = ladder_queue.front();
+        auto current_ladder = ladder_queue.front();
         ladder_queue.pop();
 
         string last_word = current_ladder.back();
-
         vector<string> neighbors = generate_neighbors(last_word);
 
         for (const string& neighbor : neighbors) {
             if (neighbor == end_word) {
-                vector<string> new_ladder = current_ladder;
-                new_ladder.push_back(neighbor);
-                return new_ladder;
+                current_ladder.push_back(neighbor);
+                return current_ladder;
             }
 
             if (word_list.count(neighbor) && !visited.count(neighbor)) {
@@ -81,14 +93,12 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         }
     }
 
-    return vector<string>(); // No ladder found
+    return {};  // No ladder found
 }
 
 void load_words(set<string>& word_list, const string& file_name) {
     ifstream file(file_name);
-    if (!file) {
-        throw runtime_error("Cannot open word file: " + file_name);
-    }
+    if (!file) throw runtime_error("Cannot open file: " + file_name);
 
     string word;
     while (file >> word) {
@@ -103,12 +113,9 @@ void print_word_ladder(const vector<string>& ladder) {
         return;
     }
 
-    cout << "Word ladder found: ";
-    for (size_t i = 0; i < ladder.size(); ++i) {
-        cout << ladder[i];
-        if (i < ladder.size() - 1) {
-            cout << " ";
-        }
+    cout << "Word ladder found:";
+    for (const auto& word : ladder) {
+        cout << " " << word;
     }
     cout << endl;
 }
