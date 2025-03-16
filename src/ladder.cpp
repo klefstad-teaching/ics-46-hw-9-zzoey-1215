@@ -121,5 +121,5 @@ void print_word_ladder(const vector<string>& ladder) {
     for (const auto& word : ladder) {
         cout << " " << word;
     }
-    cout << endl;
+    cout << " \n";
 }
