@@ -6,38 +6,7 @@ void error(string word1, string word2, string msg) {
 }
 
 bool edit_distance_within(const string& str1, const string& str2, int d) {
-    int len_diff = abs((int)str1.length() - (int)str2.length());
-    if (len_diff > d) return false;
-    
-    if (d == 1) {
-        if (len_diff == 0) {
-            int diffs = 0;
-            for (size_t i = 0; i < str1.length(); i++) {
-                if (str1[i] != str2[i]) diffs++;
-                if (diffs > 1) return false;
-            }
-            return diffs == 1;
-        }
-        else if (len_diff == 1) {
-            const string& shorter = str1.length() < str2.length() ? str1 : str2;
-            const string& longer = str1.length() < str2.length() ? str2 : str1;
-            
-            size_t i = 0, j = 0;
-            bool found_diff = false;
-            
-            while (i < shorter.length() && j < longer.length()) {
-                if (shorter[i] != longer[j]) {
-                    if (found_diff) return false;
-                    found_diff = true;
-                    j++;
-                } else {
-                    i++; j++;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
+    if (abs((int)str1.length() - (int)str2.length()) > d) return false;
     
     vector<vector<int>> dp(str1.length() + 1, vector<int>(str2.length() + 1));
     
@@ -102,7 +71,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         }
     }
     
-    return vector<string>();
+    return vector<string>();  // No ladder found
 }
 
 void load_words(set<string>& word_list, const string& file_name) {
