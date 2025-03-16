@@ -83,6 +83,7 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
         vector<string> neighbors = generate_neighbors(last_word);
 
         for (const string& neighbor : neighbors) {
+            cout << "Checking neighbor: " << neighbor << endl;
             if (neighbor == end_word) {
                 current_ladder.push_back(neighbor);
                 return current_ladder;
