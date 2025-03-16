@@ -76,56 +76,33 @@ vector<string> generate_word_ladder(const string& begin_word, const string& end_
     visited.insert(begin_word);
 
     while (!ladder_queue.empty()) {
-        int level_size = ladder_queue.size();
-        set<string> words_in_level;
+        auto current_ladder = ladder_queue.front();
+        ladder_queue.pop();
 
-        for (int i = 0; i < level_size; ++i) {
-            auto current_ladder = ladder_queue.front();
-            ladder_queue.pop();
+        string last_word = current_ladder.back();
+        vector<string> neighbors = generate_neighbors(last_word);
 
-            string last_word = current_ladder.back();
-            vector<string> neighbors;
-
-            for (size_t j = 0; j < last_word.size(); ++j) {
-                string temp = last_word;
-                for (char c = 'a'; c <= 'z'; ++c) {
-                    if (c == last_word[j]) continue;
-                    temp[j] = c;
-                    if (word_list.count(temp) && !visited.count(temp)) {
-                        neighbors.push_back(temp);
-                    }
-                }
+        for (const string& neighbor : neighbors) {
+            if (neighbor == end_word) {
+                current_ladder.push_back(neighbor);
+                return current_ladder;
             }
 
-            sort(neighbors.begin(), neighbors.end());
-
-            for (const string& neighbor : neighbors) {
-                if (neighbor == end_word) {
-                    current_ladder.push_back(neighbor);
-                    return current_ladder;
-                }
-                words_in_level.insert(neighbor);
+            if (word_list.count(neighbor) && !visited.count(neighbor)) {
+                visited.insert(neighbor);
                 vector<string> new_ladder = current_ladder;
                 new_ladder.push_back(neighbor);
                 ladder_queue.push(new_ladder);
             }
         }
-
-        for (const string& word : words_in_level) {
-            visited.insert(word);
-        }
     }
 
-    return {};
+    return {};  // No ladder found
 }
-
 
 void load_words(set<string>& word_list, const string& file_name) {
     ifstream file(file_name);
-    if (!file) {
-        cerr << "Error: Cannot open file " << file_name << endl;
-        return;
-    }
+    if (!file) throw runtime_error("Cannot open file: " + file_name);
 
     string word;
     while (file >> word) {
@@ -133,7 +110,6 @@ void load_words(set<string>& word_list, const string& file_name) {
         word_list.insert(word);
     }
 }
-
 
 void print_word_ladder(const vector<string>& ladder) {
     if (ladder.empty()) {
