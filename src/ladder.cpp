@@ -40,6 +40,15 @@ vector<string> generate_neighbors(const string& word) {
     vector<string> neighbors;
     const string letters = "abcdefghijklmnopqrstuvwxyz";
 
+    for (size_t i = 0; i < word.size(); ++i) {
+        for (char c : letters) {
+            if (c == word[i]) continue;
+            string neighbor = word;
+            neighbor[i] = c;
+            neighbors.push_back(neighbor);
+        }
+    }
+
     for (size_t i = 0; i <= word.size(); ++i) {
         for (char c : letters) {
             neighbors.push_back(word.substr(0, i) + c + word.substr(i));
@@ -50,22 +59,13 @@ vector<string> generate_neighbors(const string& word) {
         neighbors.push_back(word.substr(0, i) + word.substr(i + 1));
     }
 
-    for (size_t i = 0; i < word.size(); ++i) {
-        for (char c : letters) {
-            if (c == word[i]) continue;
-            string neighbor = word;
-            neighbor[i] = c;
-            neighbors.push_back(neighbor);
-        }
-    }
-
     return neighbors;
 }
 
 vector<string> generate_word_ladder(const string& begin_word, const string& end_word, const set<string>& word_list) {
     if (begin_word == end_word) return {};
 
-    if (!word_list.count(end_word)) {
+    if (word_list.find(end_word) == word_list.end()) {
         return {};
     }
 
