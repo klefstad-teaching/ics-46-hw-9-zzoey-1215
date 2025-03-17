@@ -59,6 +59,8 @@ vector<string> generate_neighbors(const string& word) {
         neighbors.push_back(word.substr(0, i) + word.substr(i + 1));
     }
 
+    sort(neighbors.begin(), neighbors.end());
+    
     return neighbors;
 }
 
